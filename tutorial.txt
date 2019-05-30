@@ -1,4 +1,4 @@
-123INTRODUCTION
+INTRODUCTION
 ============
 
 This pipeline is to recover orthologous exons and their flanking sequences from target enrichment data
@@ -75,7 +75,6 @@ All scripts are under "pipeline_scripts" in tutorial.tar.gz
 	
 	gunzip_Files.pl (Expand gunzipped raw data)
 	trim_adaptor.pl (Trim low quality bases and adaptors)
-	demultiplex_inline.pl (Demultiplex samples which inline index are involved)
 	predict_frames.pl (predict frame for reference, then generate coding and AA sequences of reference)
 	
 (2) Assembling (tutorial/pipeline_scripts/assemble):
@@ -125,7 +124,7 @@ Called scripts:
 
 	Others:
 	unixlb_unwarp.pl (Substitute line breaks and unwrap sequences of fasta file)
-
+	
 NOTE: Only part of scripts will be demonstrated in following tutorial. Please use "-h" or "--help" to
 see the detailed usage and options for each script 
 
@@ -167,7 +166,6 @@ line breaks, so they must be checked before analysis.
  
 (5) Avoid using non-English charaters, space or any other strange characters like "#?@!" in filename
 
-
 TEST DATA
 =========
 Test data is under "tutorial.tar.gz".
@@ -204,6 +202,11 @@ In real case, well soft-masked genomic sequences can be downloaded from Ensembl)
 
 (8) species1.genome.fas and species2.genome.fas: 2 genome sequences of other species
 
+######################################################################################################
+# Let's start to run Assexon now                                                                     #
+#                                                                                                    #
+# We assume that all scripts have been placed under $PATH when you run through the following tutorial#
+######################################################################################################
 
 DATA PREPARATION
 ================
@@ -211,7 +214,7 @@ DATA PREPARATION
 ## Step 1: Gunzip data
 First, let's expand gunzipped raw data:
 
-	$ perl ../pipeline_scripts/data_preparation/gunzip_Files.pl \
+	$ gunzip_Files.pl \
 	--gzip raw_reads \
 	--gunzipped gunzipped_raw_reads
 
@@ -226,7 +229,7 @@ gunzipped_raw_reads: Directory containing expanded raw data
 ## Step 2: Trim adaptor and low quality bases
 Then, trim illumina adaptor and low quality bases.
 
-	$ perl ../pipeline_scripts/data_preparation/trim_adaptor.pl \
+	$ trim_adaptor.pl \
 	--raw_reads gunzipped_raw_reads \
 	--trimmed trimmed
 
@@ -244,7 +247,7 @@ Involved options:
 
 First, we need to correct frame and prepare coding and AA sequences of reference in fasta format.
 
-  	$ perl ../pipeline_scripts/data_preparation/predict_frames.pl \
+  	$ predict_frames.pl \
   	--baits Oreochromis_niloticus.fas \
   	--cds Oreochromis_niloticus.onehitCDSmarkers.column1.txt \
   	--proteome Oreochromis_niloticus.pep.fas
@@ -266,20 +269,15 @@ ASSEMBLE
 ========
 
 All inputs for assembly has been prepared. Let's start assembling now. The main script
-is placed under ../pipeline_scripts/assemble/assemble.pl. This script calls another
-6 scripts to recover assemblies.
+is assemble.pl. This script calls another 6 scripts to recover assemblies.
 
 6 scripts represent 6 steps of assembly. They are called by main script in following procedure:
-1) ../pipeline_scripts/assemble/rmdup.pl: Remove PCR duplicates
-2) ../pipeline_scripts/assemble/ubxandp.pl: Parse reads to targeted loci
-3) ../pipeline_scripts/assemble/sga_assemble.pl: Assemble reads for each locus
-4) ../pipeline_scripts/assemble/exonerate_best.pl: Filter unqualified contigs and find contigs
-which might be furtherly assembled  
-5) ../pipeline_scripts/assemble/merge.pl: Assemble contigs further and retrieve best contigs
-for each locus
-6)  ../pipeline_scripts/assemble/reblast.pl: Remove potential paralogs
-
-NOTE: these 6 scripts must be put under the same directory or $PATH
+1) rmdup.pl: Remove PCR duplicates
+2) ubxandp.pl: Parse reads to targeted loci
+3) sga_assemble.pl: Assemble reads for each locus
+4) exonerate_best.pl: Filter unqualified contigs and find contigs which might be furtherly assembled  
+5) merge.pl: Assemble contigs further and retrieve best contigs for each locus
+6) reblast.pl: Remove potential paralogs
 
 (1) Run whole pipeline
 ----------------------
@@ -291,14 +289,12 @@ Normally, we run the whole pipeline (cleaned reads in, orthologous assemblies ou
 Before running the script, we need to check requirements which can be checked by "--check_depends".
 Please specify "--script_path", if 6 called scripts is not placed under $PATH
 
-	$ perl ../pipeline_scripts/assemble/assemble.pl \
-	--check_depends \
-	--script_path ../pipeline_scripts/assemble
+	$ assemble.pl \
+	--check_depends 
 
 Involved options:
 
 	--check_depends: Check all dependencies for assemble.pl
-	--script_path: Path to the wrapped scripts
 
 If all dependencies are properly installed, you will see the following text in STDOUT:
 
@@ -310,7 +306,7 @@ All modules are properly installed
 
 All softwares are properly installed
 
-All scripts are found under "../pipeline_scripts/assemble"
+All scripts are found under $PATH
 
 
 ## Step 2: Check the existence of reference sequences in given genome:
@@ -318,13 +314,12 @@ Determination of orthology between reference and enriched sequence is based on w
 aligned to same position on the genome of reference species. Thus, existence of reference must be 
 checked to avoid false negative detection of orthology due to missing targeted loci.
 
-	$ perl ../pipeline_scripts/assemble/assemble.pl \
+	$ assemble.pl \
 	--check_query \
 	--queryn Oreochromis_niloticus.dna.fas \
 	--db Oreochromis_niloticus.genome.fas \
-	--dbtype nucleo \
-	--script_path ../pipeline_scripts/assemble
-	
+	--dbtype nucleo 
+		
 Involved options:
 
 	--check_query: Check whether reference sequences existing in given database, and return
@@ -332,7 +327,6 @@ Involved options:
 	--queryn: DNA sequences of reference in fasta format 
 	--db: Path to DNA or AA database, either in Fasta or UDB format
 	--dbtype: Database type either 'nucleo' for DNA or 'prot' for AA database
-	--script_path: Path to the scripts
 
 If input genome is in Fasta format, a corresponding UDB database will be generated. If input
 database is in udb format, then no file will be generated. You will see the following text
@@ -353,16 +347,15 @@ If some genes do not exist in given genome, STDOUT will be:
 ## Step 3: Assemble:
 Requirements and existence of target loci in given genome have been checked. Let's start assemble.
 
-	$ perl ../pipeline_scripts/assemble/assemble.pl \
+	$ assemble.pl \
 	--trimmed trimmed \
 	--queryp Oreochromis_niloticus.aa.fas \
 	--queryn Oreochromis_niloticus.dna.fas \
 	--db Oreochromis_niloticus.genome.fas \
 	--dbtype nucleo \
 	--ref_name Oreochromis_niloticus \
-	--outdir assemble_result \
-	--script_path ../pipeline_scripts/assemble
-
+	--outdir assemble_result 
+	
 Involved options:
 
 	--trimmed: Directory containing reads without adaptor and low quality bases
@@ -373,7 +366,6 @@ Involved options:
 	--ref_name: Substitute name of target loci as --ref_name in the output of last step
 	(reblast.pl), disabled in default
 	--outdir: Directory to pipeline output
-	--script_path: Path to the scripts
 
 Several folders and files will be generated during the execution:
 1) run_dir: All intermediate outputs will be generated under this folder.
@@ -396,7 +388,7 @@ Output will be placed under "assemble_result" including 3 folders:
 Intermediate output under "run_dir" would occupy lot of memory. Remove "run_dir" and all
 files under it by:
 
-	$ perl ../pipeline_scripts/assemble/assemble.pl \
+	$ assemble.pl \
 	--clean
 
 
@@ -468,7 +460,6 @@ so the command is:
 	--outdir assemble_result \
 	--ref_name Oreochromis_niloticus \
 	--samplelist samplelist.txt \
-	--script_path ../pipeline_scripts/assemble \
 	--restart_from_exonerate_best
 
 EXAMPLE 2: Restart from an intermediate step to another intermediate step (sga_assemble.pl -> merge.pl)
@@ -484,7 +475,6 @@ command:
 	--queryp Oreochromis_niloticus.aa.fas \
 	--queryn Oreochromis_niloticus.dna.fas \
 	--samplelist samplelist.txt \
-	--script_path ../pipeline_scripts/assemble \
 	--restart_from_sga_assemble \
 	--stop_after_merge
 
@@ -499,7 +489,6 @@ command:
 	--trimmed trimmed \
 	--queryp Oreochromis_niloticus.aa.fas \
 	--samplelist samplelist.txt \
-	--script_path ../pipeline_scripts/assemble \
 	--stop_after_sga_assemble
 
 (4) Only assemble part of samples
@@ -519,7 +508,6 @@ Then, specify the option "--samplelist" to input your list:
 	--dbtype nucleo \
 	--outdir assemble_result \
 	--ref_name Oreochromis_niloticus \
-	--script_path ../pipeline_scripts/assemble
 	--samplelist samplelist.txt
 
 
@@ -554,7 +542,7 @@ BioPerl v1.007001 or higher
 First, we extract sequences orthology to loci in "Oreochromis_niloticus.dna.fas" from
 "species1.genome.fas" and "species2.genome.fas"
 
-	$ perl ../pipeline_scripts/postprocess/get_orthologues.pl \
+	$ get_orthologues.pl \
 	--query Oreochromis_niloticus.dna.fas \
 	--querydb Oreochromis_niloticus.genome.fas \
 	--subdb "species1.genome.fas|species2.genome.fas" \
@@ -594,7 +582,7 @@ species2.genome.fas.udb: udb of "species2.genome.fas".
 Then, we add coding sequences from "species1.genome.fas" and "species2.genome.fas" to
 enriched datasets. Each locus should have at least 3 sequences.
 
-	$ perl ../pipeline_scripts/postprocess/merge_loci.pl \
+	$ merge_loci.pl \
 	--indir "assemble_result/nf orthologs/nf" \
 	--outdir merged_nf \
 	--min_seq 3
@@ -617,7 +605,7 @@ Dependencies:
 Nothing
 
 1. Discard taxa ("species2") by "--deselected_taxa"
-	$ perl ../pipeline_scripts/postprocess/pick_taxa.pl \
+	$ pick_taxa.pl \
 	--indir merged_nf \
 	--outdir merged_nf_deselected \
 	--deselected_taxa "species2"
@@ -641,10 +629,11 @@ Then, let's align each loci.
 Dependencies:
 (1) BioPerl v1.007001 or higher
 (2) Mafft v7.294b or higher (rename it as "mafft" and put it under \$PATH)
+(3) Parallel::ForkManager;
 
 1) If input sequences are full-coding sequence:
 
-	$ perl ../pipeline_scripts/postprocess/mafft_aln.pl \
+	$ mafft_aln.pl \
 	--dna_unaligned merged_nf \
 	--dna_aligned merged_nf_aligned \
 	--cpu 12
@@ -654,7 +643,7 @@ merged_nf_aligned: Dir containing nucleotide sequences aligned in codon
 
 2) If input sequences are not coding sequence or coding sequences with flanks;
 
-	$ perl ../pipeline_scripts/postprocess/mafft_aln.pl \
+	$ mafft_aln.pl \
 	--dna_unaligned assemble_result/f \
 	--dna_aligned f_aligned \
 	--non_codon_aln \
@@ -684,7 +673,7 @@ Dependencies:
 
 Coding sequences are input. Only remove poorly aligned sequences, and "Oreochromis_niloticus" is reference: 
 
-	$ perl ../pipeline_scripts/postprocess/filter.pl \
+	$ filter.pl \
 	--indir merged_nf_aligned \
 	--filtered merged_nf_filtered \
 	--ref_taxa "Oreochromis_niloticus" \
@@ -718,7 +707,7 @@ Filter sequences with flanking regions in 'f_aligned', and only files and sequen
 in 'f_aligned' and 'nf_filtered' will be written to 'f_filtered'. Sequence of "Oreochromis_niloticus"
 is reference. Run script with 4 process: 
 
-	$ perl ../pipeline_scripts/postprocess/flank_filter.pl \
+	$ flank_filter.pl \
 	--flank f_aligned \
 	--nonflank_filtered merged_nf_filtered \
 	--flank_filtered f_filtered \
@@ -763,34 +752,42 @@ Dependencies:
 Perl module:
 Bio::AlignIO (included in Bioperl)
 Bio::Align::DNAStatistics (included in Bioperl)
+Parallel::ForkManager
 
-Summary statistics from coding sequences with and without flanks.
+Summary statistics for each locus and sample from their alignments in fasta format
 
-Summarized statistcis for each locus including:
-(1) Average length of coding region
-(2) Average length of flanking region
-(3) Length of alignment
-(4) Average GC content
-(5) Percentage of Missing data
-(6) Pairwise distance
+Summarized statistics for coding region of each locus including:
+(1) Number of enriched samples
+(2) Alignment length
+(3) GC content
+(4) Percentage of Missing data
+(6) Average pairwise distance among sequences
+
+Summarized statistics for flanking region of each locus including:
+(1) Alignment length of left flanking region
+(2) Alignment length of right flanking region
+(3) Average pairwise distance in left flanking region (only calculated for flanking region >= 20 bp)
+(4) Average pairwise distance in right flanking region (only calculated for flanking region >= 20 bp)
+
 Summarized statistcis for each sample including:
-(1) Average length of captured sequences
-(2) Average GC content
-(3) Number of captured loci 
+(1) Number of enriched loci
+(2) GC content
+(3) Average length of flanking region (left + right)
 
-	$ perl ../pipeline_scripts/postprocess/statistics.pl \
-	--nf_aligned merged_nf_filtered \
-	--f_unaligned assemble_result/f
+	$ statistics.pl \
+	--coding_aligned merged_nf_filtered \
+	--flanking_aligned f_aligned
 	
 Involved options: 
---nf_aligned: 
-  Folder comprising aligned full-coding sequences
---f_unaligned:
-  Folder comprising unaligned whole sequences (include flanking sequences)
+--coding_aligned: 
+  Folder comprising aligned coding sequences
+--flanking_aligned:
+  Folder comprising aligned coding sequences with flanking region
 
 Output:
-1) loci_summary.txt: Tab delimited table of summary statistics for each locus
-2) sample_summary.txt: Tab delimited table of summary statistics for each sample
+1) coding_summary.txt: Tab delimited table of summarized statistics for coding region of each locus
+2) flanking_summary.txt: Tab delimited table of summarized statistics for flanking region of each locus
+3) sample_summary.txt: Tab delimited table of summarized statistics for each sample
 
 (4) Phylogenetic analysis
 -------------------------
