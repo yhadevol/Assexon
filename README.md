@@ -187,10 +187,10 @@ Under "test_data" there are:
 	raw_reads
 	    └── test1
 	    |	 ├── test1_R1.fq.gz
-		|	 └── test1_R2.fq.gz
-		└── test2
-		     ├── test2_R1.fq.gz
-			 └── test2_R2.fq.gz
+	    |	 └── test1_R2.fq.gz
+	    └── test2
+		 ├── test2_R1.fq.gz
+	         └── test2_R2.fq.gz
 
 (4) Oreochromis_niloticus.fas: DNA sequences of reference in fasta format.
 
@@ -205,11 +205,11 @@ In real case, well soft-masked genomic sequences can be downloaded from Ensembl)
 
 (8) species1.genome.fas and species2.genome.fas: 2 genome sequences of other species
 
-######################################################################################################
-# Let's start to run Assexon now                                                                     #
-#                                                                                                    #
-# We assume that all scripts have been placed under $PATH when you run through the following tutorial#
-######################################################################################################
+
+# Let's start to run Assexon now     
+
+# We assume that all scripts have been placed under $PATH when you run through the following tutorial
+
 
 DATA PREPARATION
 ================
@@ -238,7 +238,9 @@ Then, trim illumina adaptor and low quality bases.
 
 Output: 
 trimmed: Directory containing reads without adaptor and low quality bases
+
 trimmed_reads_bases_count.txt: file summarized number of reads and bases in raw and trimmed reads
+
 trimming_report: Directory containg trimming report for each sample
 
 Involved options:
