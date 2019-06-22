@@ -156,14 +156,13 @@ Change directory to test data:
 Under `test_data` there are:
 * raw_reads: A folder containing 2 gzipped raw reads. Structure of folder looks like:
 
-
-	raw_reads
-	    └── test1
-	    |     ├── test1_R1.fq.gz
-	    |     └── test1_R2.fq.gz
-	    └── test2
-	          ├── test2_R1.fq.gz
-	          └── test2_R2.fq.gz
+		raw_reads
+		    └── test1
+		    |     ├── test1_R1.fq.gz
+		    |     └── test1_R2.fq.gz
+		    └── test2
+		          ├── test2_R1.fq.gz
+		          └── test2_R2.fq.gz		
 
 * Oreochromis_niloticus.fas: DNA sequences of reference in fasta format.
 
