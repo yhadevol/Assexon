@@ -47,6 +47,10 @@ Clone the Assexon repostory from GitHub:
 
 	$ git clone https://github.com/yhadevol/Assexon.git
 
+Change directory to Assexon
+
+	$ cd Assexon
+
 Scripts are placed under "pipeline_scripts", and it has three subfolders:
 
 	pipeline_scripts
