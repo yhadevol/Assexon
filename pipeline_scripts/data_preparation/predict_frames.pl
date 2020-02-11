@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-use Bio::seq;
+use Bio::Seq;
 use Getopt::Long;
 
 my @ARGVoptions = @ARGV;
@@ -21,12 +21,12 @@ my $opt = GetOptions( 'baits:s', \$baits,
 					  'cds:s', \$cds,
 					  'ref_prot:s', \$proteome,
 					  'dna_out:s', \$dna_out,
-                      'aa_out:s', \$aa_out,
+            'aa_out:s', \$aa_out,
 					  'stop_codon:i', \$stop_trsd,
 					  'id:i', \$id_trsd,
 					  'cov:i', \$cov_trsd,
 					  'cds_header!', \$cds_header,
-                      'help|h!', \$help) or die "\nERROR: Found unknown options. Use -h or --help for more information on usage\n\n";
+            'help|h!', \$help) or die "\nERROR: Found unknown options. Use -h or --help for more information on usage\n\n";
 
 # print help if no options or -h is specified
 if ((@ARGVoptions == 0)||($help)) {
@@ -120,10 +120,10 @@ my %baits_seq;
 foreach my $header (sort keys %$seqhash) {
 	my @header_fields = $header =~ /[^\.]+/g;
 	my $loci_position = $header_fields[-3] . "." . $header_fields[-2] . "." . $header_fields[-1];
-	
+
 	my $seq = $seqhash->{$header};
 	$seq = uc($seq);
-	
+
 	if (!(exists $baits_seq{$loci_position})) {
 	$baits_seq{$loci_position}->{header} = $header;
 	$baits_seq{$loci_position}->{seq} = $seq;
@@ -175,15 +175,15 @@ while (my $line = <PROTEOME>) {
 	if ($line =~ />(.+)/) {
 		my $header = $1;
 		my @header_field = $header =~ /\S+/g;
-		my $prot_id = $header_field[0]; 
+		my $prot_id = $header_field[0];
 		my @gene_field = grep {$_ =~ /^gene\:(\S+)/} @header_field;
 		my ($gene_id) = $gene_field[0] =~ /^gene\:(\S+)/;
-	
+
 		if (exists $all_gene->{$gene_id}) {
 		$proteome{$gene_id}->{$prot_id} = "";
-		$exist = [$gene_id, $prot_id];		
+		$exist = [$gene_id, $prot_id];
 		} else {
-		$exist = "";	
+		$exist = "";
 		}
 	} else {
 	chomp $line;
@@ -202,52 +202,52 @@ foreach my $loci_position (sort keys %$baits_seq) {
 	my $uncorrected_seq = $baits_seq->{$loci_position}->{seq};
 	my $ori_name = $baits_seq->{$loci_position}->{header};
 	my $ori_loci_position = $ori_name;
-	
+
 	my $print = 0;
 	$frame_info{$ori_name} = "NA";
-	
+
 	# no ref correct
 	my ($corrected_frame, $corrected_prot, $corrected_seq) = no_ref_correct($uncorrected_seq);
-	
+
 	if (($corrected_frame)&&($corrected_prot)) { # if only one frame is fine
 		my $prot = translate($uncorrected_seq, $corrected_frame);
 		my ($corrected_prot, $stopnum) = rm_trail_stop($prot);
 		my $corrected_seq = substr $uncorrected_seq, $corrected_frame-1, length($corrected_prot)*3;
-		
+
 		print DNA ">$ori_name\n$corrected_seq\n";
-		print AA ">$ori_name\n$corrected_prot\n";	
-		
+		print AA ">$ori_name\n$corrected_prot\n";
+
 		$frame_info{$ori_name} = $corrected_frame;
-		$print = 1;			
+		$print = 1;
 	} elsif (($corrected_frame)&&(! $corrected_prot)) { # ref correct if multiple frame left in consideration
 		$loci_position =~ s/-/_/ if (! (exists $loci_gene->{$loci_position}));
-		
+
 		if (exists $loci_gene->{$loci_position}) {
 			my $gene = $loci_gene->{$loci_position};
 			if (exists $proteome{$gene}) {
 				my %protseq = %{$proteome{$gene}};
-			
+
 				my $corrected_frame = pair_aln($uncorrected_seq, \%protseq, $ori_name);
 
 				if ($corrected_frame) {
 					my $prot = translate($uncorrected_seq, $corrected_frame);
 					my ($corrected_prot, $stopnum) = rm_trail_stop($prot);
-				
+
 					if ($stopnum <= $stop_trsd) {
 					my $corrected_seq = substr $uncorrected_seq, $corrected_frame-1, length($corrected_prot)*3;
 					print DNA ">$ori_name\n$corrected_seq\n";
-					print AA ">$ori_name\n$corrected_prot\n";	
+					print AA ">$ori_name\n$corrected_prot\n";
 					$frame_info{$ori_name} = $corrected_frame;
-					$print = 1;			
+					$print = 1;
 					}
-				} 
+				}
 			} else {
 # 			print STDERR "\nWARNING: Reference protein of loci $ori_name ($gene) was absent in $proteome\n";
 			}
 		} else {
 # 		print STDERR "\nWARNING: Cannot find reference gene of loci $ori_name in index file\n";
 		}
-		
+
 		# select frame with fewest stop codon if it cannot be corrected by ref
 		if ($print == 0) {
 		my $prot = translate($uncorrected_seq, $corrected_frame);
@@ -255,12 +255,12 @@ foreach my $loci_position (sort keys %$baits_seq) {
 
 		my $corrected_seq = substr $uncorrected_seq, $corrected_frame-1, length($corrected_prot)*3;
 		print DNA ">$ori_name\n$corrected_seq\n";
-		print AA ">$ori_name\n$corrected_prot\n";	
+		print AA ">$ori_name\n$corrected_prot\n";
 		$frame_info{$ori_name} = $corrected_frame;
 		$print = 1;
 		}
 	}
-	
+
 	push @uncorrected_loci, $ori_loci_position if (! $print);
 }
 
@@ -279,11 +279,11 @@ $start_codon --; # translate function in bioperl only accept 0,1 or 2
 # translate
 my $seq_obj=Bio::Seq->new(-seq=>$seq,-alphabet=>'dna'); # create Bio::Seq object
 my $pro=$seq_obj->translate(-frame => $start_codon, -terminator => "*", -unknown => "X"); # translate
-$pro=$pro->seq; 
+$pro=$pro->seq;
 return($pro);
 }
 
-# subroutine to remove trailing stop codons and get number of stop codons in aa 
+# subroutine to remove trailing stop codons and get number of stop codons in aa
 sub rm_trail_stop {
 my $prot = shift;
 
@@ -316,7 +316,7 @@ my @sugar = $exonerate_out =~ /\n(sugar.+)/g;
 my %qualified_frame;
 foreach my $sugar (@sugar) {
 	my @fields = $sugar =~ /\S+/g;
-	
+
 	my $frame = ($fields[-7]%3)+1;
 	my $strand = $fields[-5];
 	my $aln_score = $fields[-4];
@@ -390,10 +390,10 @@ while (my $line = <INFILE>) {
 	# remove enter in windows
 	$line =~ s/\r//g;
 	chomp $line;
-	 
+
 	if ($line =~ /^>(\S+)/) { 	# if find > at the beginning of the line, after ">" is a taxon name
 		$taxon = $1;
-		
+
 		# if find previous taxon name, and it hasn't recorded before
 		if ($lasttaxon) {
 			if (!(exists $seq{$lasttaxon})) {
@@ -411,14 +411,14 @@ while (my $line = <INFILE>) {
 					}
 					if (@strange_char > 0) { # warn if strange char found in sequence
 					my $strange_char = join " ", @strange_char;
-					print STDERR "WARNING: Found strange character \"$strange_char\" in sequence of $lasttaxon in $file. This taxon will be discarded.\n";					
+					print STDERR "WARNING: Found strange character \"$strange_char\" in sequence of $lasttaxon in $file. This taxon will be discarded.\n";
 					}
-				} 
+				}
 			} else { # count number of taxon occur multiple times
 			$taxa_cnt{$lasttaxon}++
 			}
 		}
-		
+
 		$seq = "";
 		$lasttaxon = $taxon;
 	} else { # else is sequences
@@ -435,16 +435,16 @@ if ($lasttaxon) { # also need to take care sequence of the last taxon
 		if (($length > 0)&&(@strange_char == 0)) {
 		$seq{$lasttaxon} = $seq;
 		push @input_order, $lasttaxon;
-		$seqlength{$length} = ""; 
+		$seqlength{$length} = "";
 		} else {
 			if ($length == 0) {
 			print STDERR "WARNING: No nucleotide found sequence of $lasttaxon in $file. This taxon will be discarded.\n";
 			}
 			if (@strange_char > 0) {
 			my $strange_char = join " ", @strange_char;
-			print STDERR "WARNING: Found strange character \"$strange_char\" in sequence of $lasttaxon in $file. This taxon will be discarded.\n";					
+			print STDERR "WARNING: Found strange character \"$strange_char\" in sequence of $lasttaxon in $file. This taxon will be discarded.\n";
 			}
-		} 
+		}
 	} else {
 	$taxa_cnt{$lasttaxon}++
 	}
@@ -485,7 +485,7 @@ my $ARGVoptions = shift;
 		$args{$1} = "";
 		}
 	}
-	
+
 	# find all missing arguments
 	my @missing_option;
 	foreach my $ess_arg (@$essential) {
@@ -493,7 +493,7 @@ my $ARGVoptions = shift;
 		push @missing_option, "--$ess_arg";
 		}
 	}
-	
+
 	# print out all missing arguments
 	if (@missing_option >= 1) {
 	my $missing_option = join ", ", @missing_option;
@@ -505,7 +505,7 @@ sub usage {
 print STDERR "
 Script name: predict_frames.pl
 
-This is a script to predict frame and generate coding and amino acid sequences of baits sequences using three files related to a Gene Capture dataset; (1) a bait sequence fasta, (2) a fasta file containing amino acid sequences with ENSMBL geneIDs for headers, (3) onehitCDSmarkers file generated from Evolmarker that is used to locate reference protein of each locus 
+This is a script to predict frame and generate coding and amino acid sequences of baits sequences using three files related to a Gene Capture dataset; (1) a bait sequence fasta, (2) a fasta file containing amino acid sequences with ENSMBL geneIDs for headers, (3) onehitCDSmarkers file generated from Evolmarker that is used to locate reference protein of each locus
 
 Overview:
 Each bait sequence is translated in three frames, if more than one frame left in consideration. Pairwise alignment between the translated coding sequences and the known protein sequence found from onehitCDSmarkers file is used to find the frame.
@@ -519,7 +519,7 @@ Example usage:
 	perl predict_frames.pl --baits species.fas --cds species.onehitCDSmarkers.column1.txt --ref_prot species.pep.fas
 
 
-Input files: 
+Input files:
 (1) species.fas
 (2) species.onehitCDSmarkers.column1.txt
 (3) species.pep.fas
@@ -551,14 +551,14 @@ Options:
   Whether is a header at the first line of OnehitCDSmarker file. Specify this option if header exists at the first line of OnehitCDSmarker file, off in default
 --help , -h
   Show this help message and exit
-  
-Author: Hao Yuan                                                                     
-        Shanghai Ocean University                                               
-        Shanghai, China, 201306                                                               
-                                                                                         
-Created by: Nov 20, 2018                                                              
-                                                                                         
-Last modified by: 
+
+Author: Hao Yuan
+        Shanghai Ocean University
+        Shanghai, China, 201306
+
+Created by: Nov 20, 2018
+
+Last modified by:
 ";
 exit;
 }

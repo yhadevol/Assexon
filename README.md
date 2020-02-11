@@ -212,13 +212,13 @@ First, we need to correct frame and prepare coding and AA sequences of reference
   	$ predict_frames.pl \
   	--baits Oreochromis_niloticus.fas \
   	--cds Oreochromis_niloticus.onehitCDSmarkers.column1.txt \
-  	--proteome Oreochromis_niloticus.pep.fas
+  	--ref_prot Oreochromis_niloticus.pep.fas
 
 Involved options:
 
 *	--baits: Frame-uncorrected sequences of reference
 *	--cds: OnehitCDSmarker generated from Evolmarker. Only info in first columns will be used,so just input file with only first column is fine
-*	--proteome: Reference protein sequences mined from ENSMBL
+*	--ref_prot: Reference protein sequences mined from ENSMBL
 
 Output:
 * Oreochromis_niloticus.dna.fas: Coding DNA sequences of reference
