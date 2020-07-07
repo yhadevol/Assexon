@@ -121,11 +121,11 @@ foreach my $gene (sort keys %hash) {
 	my $suffix_num = scalar keys %suffix;
 	
 	my $suffix;
-	if ($suffix_num == 1) {
-	$suffix = $suffix[0];
-	} else {
+	# if ($suffix_num == 1) {
+	# $suffix = $suffix[0];
+	# } else {
 	$suffix = "fas";
-	}
+	# }
 	
 	# warning if the same taxa exist multiple time
 	my %taxa_list = %{$hash{$gene}->{taxon}};
@@ -349,7 +349,10 @@ Author: Hao Yuan
                                                                                          
 Created by: June 27, 2018                                                              
                                                                                          
-Last modified by:
+Last modified by: 2020.7.7
+
+The output files are only suffixed with \"fas\", instead of identifying suffix from input files
+
 ";
 exit;
 }
