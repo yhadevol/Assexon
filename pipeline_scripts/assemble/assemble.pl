@@ -1132,17 +1132,24 @@ my ($gene_num) = `grep ">" $queryp|wc -l` =~ /(\d+)/; # count loci number
 
 # make new dir containing amino acid sequences of quer
 if ($flag == 0) {
-	mkdir $querypdir;
-	open QUERY, "$queryp";
+	my %queryp_all;
+	my $name;
+	open QUERY, $queryp;
 	while (my $line = <QUERY>) {
+		chomp($line);
 		if ($line =~ />(\S+)/) {
-		chomp(my $seq = <QUERY>);
-		open QUERYPOUT, ">$querypdir/$1.fas";
-		print QUERYPOUT ">$1\n$seq\n";
-		close QUERYPOUT;
+			$name = $1;
+		} else {
+			$queryp_all{$name} .= $line;
 		}
 	}
 	close QUERY;
+
+	foreach my $name (sort keys %queryp_all) {
+		open QUERYPOUT, ">$querypdir/$name.fas";
+		print QUERYPOUT ">$name\n$queryp_all{$name}\n";
+		close QUERYPOUT;
+	}
 }
 }
 
